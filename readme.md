@@ -40,55 +40,53 @@
 - [ ] Compartilhamento de listas entre usuários
 - [ ] Permissões de edição e visualização
 - [ ] Histórico de compras
-- [ ] Notificações para itens adicionados
 - [ ] Interface personalizada por lista (cores/ícones)
 - [ ] Otimização offline
-- [ ] Testes automatizados com Jest/Testing Library
 
 ---
 
 ## 📁 Estrutura de Pastas
 
 ```bash
-cart-mate
-├─ assets
-│ ├─ adaptive-icon.png
-│ ├─ favicon.png
-│ ├─ icon.png
-│ └─ splash-icon.png
-├─ src
-│ ├─ components
-│ │ ├─ HeaderBar.tsx
-│ │ └─ ListSelectModal.tsx
-│ ├─ contexts
-│ │ ├─ AuthContext.tsx
-│ │ └─ ShoppingListContext.tsx
-│ ├─ hooks
-│ │ ├─ useShoppingList.ts
-│ │ └─ useUser.ts
-│ ├─ navigation
-│ │ ├─ AppNavigator.tsx
-│ │ ├─ AppRoutes.tsx
-│ │ ├─ PrivateNavigator.tsx
-│ │ └─ types.ts
-│ ├─ screens
-│ │ ├─ LoginScreen.tsx
-│ │ ├─ LogoutScreen.tsx
-│ │ ├─ MyListsScreen.tsx
-│ │ ├─ RegisterScreen.tsx
-│ │ └─ ShoppingListScreen.tsx
-│ └─ services
-│ │ └─ firebaseService.ts
-├─ types
-│ └─ types.ts
-├─ .gitignore
-├─ app.config.js
-├─ App.tsx
-├─ firebase.ts
-├─ index.ts
-├─ package.json
-├─ readme.md
-└─ tsconfig.json
+├── .gitignore
+├── App.tsx
+├── app.config.js
+├── assets
+    ├── adaptive-icon.png
+    ├── favicon.png
+    ├── icon.png
+    └── splash-icon.png
+├── firebase.ts
+├── index.ts
+├── package-lock.json
+├── package.json
+├── readme.md
+├── src
+    ├── components
+    │   ├── HeaderBar.tsx
+    │   └── ListSelectModal.tsx
+    ├── contexts
+    │   ├── AuthContext.tsx
+    │   └── ShoppingListContext.tsx
+    ├── hooks
+    │   ├── useShoppingList.ts
+    │   └── useUser.ts
+    ├── navigation
+    │   ├── AppNavigator.tsx
+    │   ├── AppRoutes.tsx
+    │   ├── PrivateNavigator.tsx
+    │   └── types.ts
+    ├── screens
+    │   ├── LoginScreen.tsx
+    │   ├── LogoutScreen.tsx
+    │   ├── MyListsScreen.tsx
+    │   ├── RegisterScreen.tsx
+    │   └── ShoppingListScreen.tsx
+    └── services
+    │   └── firebaseService.ts
+├── tsconfig.json
+└── types
+    └── types.ts
 ```
 
 ---
