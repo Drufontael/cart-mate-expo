@@ -60,7 +60,7 @@ export default function MyListsScreen() {
       <HeaderBar label="Minhas Listas" />
       <FlatList
         data={lists}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(list) => list.id}
         renderItem={({ item }) => (
           <View style={styles.listItem}>
             <TouchableOpacity

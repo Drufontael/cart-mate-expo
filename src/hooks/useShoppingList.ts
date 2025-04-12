@@ -22,7 +22,7 @@ export const useShoppingList = () => {
   const [newItem, setNewItem] = useState<Item>({ id: "", name: "" });
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newListName, setNewListName] = useState("");
-  const { userId } = useAuth();
+  const { userId, email } = useAuth();
 
   const sortItemsByName = (items: Item[]) =>
     [...items].sort((a, b) =>
@@ -33,12 +33,13 @@ export const useShoppingList = () => {
     const fetchLists = async () => {
       if (!userId) return;
 
-      const firebaseLists = await getListsFromFirebase(userId);
+      const firebaseLists = await getListsFromFirebase(userId, email);
 
       if (firebaseLists.length === 0) {
         const timestamp = new Date().toISOString();
         const defaultList: ShoppingList = {
           id: nanoid(),
+          ownerId: userId,
           name: "Lista Padrão",
           items: [],
           createdAt: timestamp,
@@ -109,6 +110,7 @@ export const useShoppingList = () => {
 
     const newList: ShoppingList = {
       id: nanoid(),
+      ownerId: userId,
       name: newListName,
       items: [],
       createdAt: timestamp,
@@ -124,7 +126,9 @@ export const useShoppingList = () => {
   };
 
   const deleteList = async (id: string) => {
-    await deleteListFromFirebase(userId, id);
+    const ownerId = lists.find((list) => list.id === id)?.ownerId;
+    if (!ownerId) return;
+    await deleteListFromFirebase(ownerId, id);
     const updatedLists = lists.filter((list) => list.id !== id);
     setLists(updatedLists);
     if (id === selectedListId && updatedLists.length > 0) {
@@ -134,6 +138,29 @@ export const useShoppingList = () => {
       setSelectedListId("");
       setItems([]);
     }
+  };
+
+  const shareListWith = async (email: string) => {
+    if (!userId || !email.trim()) return;
+
+    const targetList = lists.find((list) => list.id === selectedListId);
+    if (!targetList) return;
+
+    const updatedList: ShoppingList = {
+      ...targetList,
+      sharedWith: [
+        ...(targetList.sharedWith || []),
+        email.trim().toLowerCase(),
+      ],
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedLists = lists.map((list) =>
+      list.id === selectedListId ? updatedList : list
+    );
+
+    setLists(updatedLists);
+    await saveListToFirebase(userId, updatedList);
   };
 
   const addOrUpdateItem = () => {
