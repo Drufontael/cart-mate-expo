@@ -6,8 +6,15 @@ export type Item = {
   purchased?: boolean;
 };
 
-export type ShoppingList = {
+export type SharedWith = {
+  [userId: string]: true;
+};
+
+export interface ShoppingList {
   id: string;
   name: string;
   items: Item[];
-};
+  createdAt: string;
+  updatedAt: string;
+  sharedWith?: SharedWith;
+}

@@ -33,18 +33,34 @@ export const useShoppingList = () => {
     const fetchLists = async () => {
       if (!userId) return;
 
-      const selected = lists.find((list) => list.id === selectedListId);
-      if (selected) {
-        setItems(sortItemsByName(selected.items));
+      const firebaseLists = await getListsFromFirebase(userId);
+
+      if (firebaseLists.length === 0) {
+        const timestamp = new Date().toISOString();
+        const defaultList: ShoppingList = {
+          id: nanoid(),
+          name: "Lista Padrão",
+          items: [],
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        };
+
+        await saveListToFirebase(userId, defaultList);
+        setLists([defaultList]);
+        setSelectedListId(defaultList.id);
+        setItems([]);
+        await AsyncStorage.setItem(LIST_ID, defaultList.id);
+        return;
       }
 
-      const firebaseLists = await getListsFromFirebase(userId);
       setLists(firebaseLists);
 
+      const storedId = await AsyncStorage.getItem(LIST_ID);
       const updatedSelected = firebaseLists.find(
-        (list) => list.id === selectedListId
+        (list) => list.id === (storedId || selectedListId)
       );
       if (updatedSelected) {
+        setSelectedListId(updatedSelected.id);
         setItems(sortItemsByName(updatedSelected.items));
       }
     };
@@ -73,8 +89,11 @@ export const useShoppingList = () => {
 
   const saveItemsToStorage = async (data: Item[]) => {
     if (!userId) return;
+    const timestamp = new Date().toISOString();
     const updatedLists = lists.map((list) =>
-      list.id === selectedListId ? { ...list, items: data } : list
+      list.id === selectedListId
+        ? { ...list, items: data, updatedAt: timestamp }
+        : list
     );
     setLists(updatedLists);
     await saveListToFirebase(
@@ -85,15 +104,22 @@ export const useShoppingList = () => {
 
   const createList = async () => {
     if (!newListName.trim()) return;
+
+    const timestamp = new Date().toISOString();
+
     const newList: ShoppingList = {
       id: nanoid(),
       name: newListName,
       items: [],
+      createdAt: timestamp,
+      updatedAt: timestamp,
     };
+
     setLists((prev) => [...prev, newList]);
     setNewListName("");
     setSelectedListId(newList.id);
     setItems([]);
+
     await saveListToFirebase(userId, newList);
   };
 
