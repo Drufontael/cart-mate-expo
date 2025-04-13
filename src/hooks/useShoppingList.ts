@@ -22,6 +22,8 @@ export const useShoppingList = () => {
   const [newItem, setNewItem] = useState<Item>({ id: "", name: "" });
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newListName, setNewListName] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
   const { userId, email } = useAuth();
 
   const sortItemsByName = (items: Item[]) =>
@@ -32,10 +34,34 @@ export const useShoppingList = () => {
   useEffect(() => {
     const fetchLists = async () => {
       if (!userId) return;
+      setIsLoading(true);
 
       const firebaseLists = await getListsFromFirebase(userId, email);
 
-      if (firebaseLists.length === 0) {
+      setLists(firebaseLists);
+
+      let storedId = await AsyncStorage.getItem(LIST_ID);
+
+      const selected =
+        firebaseLists.find((list) => list.id === storedId) || firebaseLists[0];
+
+      if (selected) {
+        setSelectedListId(selected.id);
+        setItems(sortItemsByName(selected.items));
+        await AsyncStorage.setItem(LIST_ID, selected.id);
+      }
+
+      setIsLoading(false);
+    };
+
+    fetchLists();
+  }, [userId, email]);
+
+  useEffect(() => {
+    const createDefaultIfNeeded = async () => {
+      if (isLoading || !userId) return;
+
+      if (lists.length === 0) {
         const timestamp = new Date().toISOString();
         const defaultList: ShoppingList = {
           id: nanoid(),
@@ -51,35 +77,15 @@ export const useShoppingList = () => {
         setSelectedListId(defaultList.id);
         setItems([]);
         await AsyncStorage.setItem(LIST_ID, defaultList.id);
-        return;
-      }
-
-      setLists(firebaseLists);
-
-      const storedId = await AsyncStorage.getItem(LIST_ID);
-      const updatedSelected = firebaseLists.find(
-        (list) => list.id === (storedId || selectedListId)
-      );
-      if (updatedSelected) {
-        setSelectedListId(updatedSelected.id);
-        setItems(sortItemsByName(updatedSelected.items));
       }
     };
 
-    fetchLists();
-  }, [userId, selectedListId]);
+    createDefaultIfNeeded();
+  }, [isLoading, userId, lists]);
 
   useEffect(() => {
     saveItemsToStorage(items);
   }, [items]);
-
-  useEffect(() => {
-    const fetchSelectedListId = async () => {
-      const id = await AsyncStorage.getItem(LIST_ID);
-      if (id) setSelectedListId(id);
-    };
-    fetchSelectedListId();
-  }, []);
 
   useEffect(() => {
     const saveSelectedListId = async () => {
@@ -152,6 +158,30 @@ export const useShoppingList = () => {
         ...(targetList.sharedWith || []),
         email.trim().toLowerCase(),
       ],
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedLists = lists.map((list) =>
+      list.id === selectedListId ? updatedList : list
+    );
+
+    setLists(updatedLists);
+    await saveListToFirebase(userId, updatedList);
+  };
+
+  const removeSharedEmail = async (emailToRemove: string) => {
+    if (!userId || !emailToRemove.trim()) return;
+
+    const targetList = lists.find((list) => list.id === selectedListId);
+    if (!targetList || !targetList.sharedWith) return;
+
+    const updatedSharedWith = targetList.sharedWith.filter(
+      (email) => email !== emailToRemove.trim().toLowerCase()
+    );
+
+    const updatedList: ShoppingList = {
+      ...targetList,
+      sharedWith: updatedSharedWith,
       updatedAt: new Date().toISOString(),
     };
 
@@ -258,5 +288,7 @@ export const useShoppingList = () => {
     newListName,
     setNewListName,
     createList,
+    shareListWith,
+    removeSharedEmail,
   };
 };

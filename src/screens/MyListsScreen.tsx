@@ -13,6 +13,8 @@ import { useShoppingListContext } from "../contexts/ShoppingListContext";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { DrawerParamList } from "../navigation/types";
 import { useNavigation } from "@react-navigation/native";
+import Ionicons from "@expo/vector-icons/Ionicons";
+
 import HeaderBar from "../components/HeaderBar";
 
 export default function MyListsScreen() {
@@ -35,6 +37,13 @@ export default function MyListsScreen() {
       setItems(sortItemsByName(selectedList?.items ?? []));
     }
     navigation.jumpTo("ShoppingList");
+  };
+
+  const handleOpenDetails = (listId: string) => {
+    const selectedList = lists.find((l) => l.id === listId);
+    if (selectedList) {
+      //navigation.navigate("ListDetails", { list: selectedList });
+    }
   };
 
   const handleDelete = (listId: string) => {
@@ -69,9 +78,23 @@ export default function MyListsScreen() {
             >
               <Text style={styles.listName}>{item.name}</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleDelete(item.id)}>
-              <Text style={styles.deleteButton}>🗑️</Text>
-            </TouchableOpacity>
+
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <TouchableOpacity
+                onPress={() => handleOpenDetails(item.id)}
+                style={{ marginRight: 30 }}
+              >
+                <Ionicons
+                  name="information-circle-outline"
+                  size={22}
+                  color="#00796b"
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                <Ionicons name="trash-outline" size={22} color="red" />
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       />

@@ -11,6 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const useUser = () => {
   const USER_ID = "@userId";
+  const USER_EMAIL = "@userEmail";
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,12 +19,14 @@ export const useUser = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUserId = async () => {
+    const fetchUser = async () => {
       const id = await AsyncStorage.getItem(USER_ID);
+      const email = await AsyncStorage.getItem(USER_EMAIL);
+      if (email) setEmail(email);
       if (id) setUserId(id);
       setLoading(false);
     };
-    fetchUserId();
+    fetchUser();
   }, []);
 
   const handleLogin = async (navigation: any) => {
@@ -36,6 +39,7 @@ export const useUser = () => {
       const uid = userCredential.user.uid;
       setUserId(uid);
       await AsyncStorage.setItem(USER_ID, uid);
+      await AsyncStorage.setItem(USER_EMAIL, email.trim());
       navigation.replace("AppRoutes");
     } catch (error: any) {
       console.error("Login error:", error.message);

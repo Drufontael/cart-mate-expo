@@ -1,12 +1,17 @@
 import { getDatabase, ref, set, get, remove } from "firebase/database";
 import { Item, ShoppingList } from "../../types/types";
 
-export const saveListToFirebase = async (id: any, list: ShoppingList) => {
+// Salva ou atualiza uma lista
+export const saveListToFirebase = async (
+  userId: string,
+  list: ShoppingList
+) => {
   const db = getDatabase();
-  const listRef = ref(db, `shoppingLists/${list.ownerId}/lists/${list.id}`);
+  const listRef = ref(db, `shoppingLists/${userId}/lists/${list.id}`);
   await set(listRef, list);
 };
 
+// Busca todas as listas que pertencem ao usuário ou foram compartilhadas com ele
 export const getListsFromFirebase = async (
   userId: string,
   userEmail: string
@@ -14,24 +19,33 @@ export const getListsFromFirebase = async (
   const db = getDatabase();
   const snapshot = await get(ref(db, "shoppingLists"));
   if (!snapshot.exists()) return [];
+
   const allData = snapshot.val();
-  const userList: ShoppingList[] = [];
+  const userLists: ShoppingList[] = [];
+
   for (const ownerId in allData) {
-    const lists = allData[ownerId];
-    for (const listId in lists) {
-      const list = lists[listId];
+    const userListsObj = allData[ownerId]?.lists;
+    if (!userListsObj) continue;
+
+    for (const listId in userListsObj) {
+      const list = userListsObj[listId];
       const isOwner = ownerId === userId;
       const isSharedWithUser = list.sharedWith?.includes(userEmail);
       if (isOwner || isSharedWithUser) {
-        userList.push(list);
+        userLists.push({
+          ...list,
+          id: listId,
+        });
       }
     }
   }
-  return userList;
+
+  return userLists;
 };
 
+// Atualiza apenas os itens de uma lista
 export const updateItemsInList = async (
-  id: any,
+  userId: string,
   lists: ShoppingList[],
   selectedListId: string,
   newItems: Item[]
@@ -39,14 +53,17 @@ export const updateItemsInList = async (
   const updatedLists = lists.map((list) =>
     list.id === selectedListId ? { ...list, items: newItems } : list
   );
-  await saveListToFirebase(
-    id,
-    updatedLists.find((list) => list.id === selectedListId)!
-  );
+  const updatedList = updatedLists.find((list) => list.id === selectedListId);
+  if (updatedList) {
+    await saveListToFirebase(userId, updatedList);
+  }
   return updatedLists;
 };
 
-export const deleteListFromFirebase = async (ownerId: any, listId: string) => {
+export const deleteListFromFirebase = async (
+  ownerId: string,
+  listId: string
+) => {
   const db = getDatabase();
   const listRef = ref(db, `shoppingLists/${ownerId}/lists/${listId}`);
   await remove(listRef);

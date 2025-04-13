@@ -4,6 +4,7 @@ import ShoppingListScreen from "../screens/ShoppingListScreen";
 import MyListsScreen from "../screens/MyListsScreen";
 import LogoutScreen from "../screens/LogoutScreen";
 import { DrawerParamList } from "./types";
+import ListDetailsScreen from "../screens/ListDetailsScreen";
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
 
@@ -20,10 +21,16 @@ export default function PrivateNavigator() {
         options={{ title: "Lista de Compras" }}
       />
       <Drawer.Screen
+        name="ListDetails"
+        component={ListDetailsScreen}
+        options={{ title: "Detalhes da Lista" }}
+      />
+      <Drawer.Screen
         name="MyLists"
         component={MyListsScreen}
         options={{ title: "Minhas Listas" }}
       />
+
       <Drawer.Screen
         name="Logout"
         component={LogoutScreen}
