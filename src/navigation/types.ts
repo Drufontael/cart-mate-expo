@@ -8,4 +8,5 @@ export type DrawerParamList = {
   ShoppingList: undefined;
   MyLists: undefined;
   Logout: undefined;
+  ListDetails: undefined;
 };

@@ -134,7 +134,11 @@ export const useShoppingList = () => {
   const deleteList = async (id: string) => {
     const ownerId = lists.find((list) => list.id === id)?.ownerId;
     if (!ownerId) return;
-    await deleteListFromFirebase(ownerId, id);
+    if (userId === ownerId) {
+      await deleteListFromFirebase(ownerId, id);
+    } else {
+      removeSharedEmail(email);
+    }
     const updatedLists = lists.filter((list) => list.id !== id);
     setLists(updatedLists);
     if (id === selectedListId && updatedLists.length > 0) {
